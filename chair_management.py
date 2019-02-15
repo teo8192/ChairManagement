@@ -22,18 +22,22 @@ class Reservations:
             except ZeroDivisionError:
                 # Assume that 0 guests in reality means 1 guest
                 chairs.append(num_chairs)
+        
+        self._chairs_per_person = chairs
         return chairs
 
-    def get_dangerous_reservations(self, chairs):
+    def dangerous_reservations(self):
         low_chair_warnings = []
-        for reservation, avg_chairs in zip(self._reservations, chairs):
+        for reservation, avg_chairs in zip(self._reservations, self._chairs_per_person):
             if avg_chairs < 1.05:
                 low_chair_warnings.append(reservation[0])
+
+        self._dangerous_chairs = low_chair_warnings
         return low_chair_warnings
 
-    def generate_chair_warnings(self, low_chairs, chairs):
-        for (res_id, name, number), chairs in zip(self._reservations, chairs):
-            if res_id in low_chairs:
+    def generate_chair_warnings(self):
+        for (res_id, name, number), chairs in zip(self._reservations, self._chairs_per_person):
+            if res_id in self._dangerous_chairs:
                 print("Low-chair warning for {}, only {} chairs per person for reservation {}".format(name, chairs, res_id))
 
     @property
@@ -49,10 +53,10 @@ def main():
     reservations = Reservations("reservations")
 
     chairs_per_person = reservations.calculate_chairs_per_person(50)
-    low_chairs = reservations.get_dangerous_reservations(chairs_per_person)
+    reservations.dangerous_reservations()
 
     if options.warn:
-        reservations.generate_chair_warnings(low_chairs, chairs_per_person)
+        reservations.generate_chair_warnings()
 
     if options.average:
         average = sum(chairs_per_person) / len(chairs_per_person)
