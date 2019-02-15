@@ -3,8 +3,8 @@ import argparse
 class Reservations:
     def __init__(self, filename):
         self._reservations = []
-        with open(filename) as f:
-            for res_id, reservation in enumerate(f):
+        with open(filename) as _f:
+            for res_id, reservation in enumerate(_f):
                 name, number = reservation.strip().split(",")
                 if not name:
                     name = "UNKNOWN"
@@ -40,20 +40,26 @@ class Reservations:
     def reservations(self):
         return self._reservations
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--warn', action='store_true')
     parser.add_argument('--average', action='store_true')
     options = parser.parse_args()
 
     reservations = Reservations("reservations")
+
     chairs_per_person = reservations.calculate_chairs_per_person(50)
     low_chairs = reservations.get_dangerous_reservations(chairs_per_person)
+
     if options.warn:
         reservations.generate_chair_warnings(low_chairs, chairs_per_person)
+
     if options.average:
         average = sum(chairs_per_person) / len(chairs_per_person)
         print("The average chairs per person is {}".format(average))
     if not options.warn and not options.average:
         for reservation in reservations.reservations:
             print("\t".join(reservation))
+
+if __name__ == "__main__":
+    main()
